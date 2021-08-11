@@ -11,8 +11,11 @@ asynchronous child process under lisp.
 
 The `etcd` package includes basic `put` and `get` functions, as well
 as to convenience macro `with-etcd` to make it simple to start-up your
-`etcd` node.  The `etcd` package will call used defined
+`etcd` node.  The `etcd` package will call user defined
 `become-leader` and `become-follower` methods when the node becomes
 the leader or follower respectively.
+
+As a work-in-progress it's very likely that details will change over
+time.  Feedback welcome!
 
 AG
