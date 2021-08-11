@@ -110,24 +110,28 @@
           (if (string= role "follower")
               (bt:make-thread (lambda () (become-follower etcd))))))))
 
+
 (defmethod initialize-instance :after ((etcd etcd) &key)
   (with-slots (config process get-put-uri) etcd
-    (setf get-put-uri (format nil "~A/v2/keys/" (gethash "listen-client-urls" config)))
-    (let ((cmd `("etcd"
-                 "--name" ,(gethash "name" config)
-                 "--initial-advertise-peer-urls" ,(gethash "initial-advertise-peer-urls" config)
-                 "--listen-peer-urls" ,(gethash "listen-peer-urls" config)
-                 "--listen-client-urls" ,(gethash "listen-client-urls" config)
-                 "--advertise-client-urls" ,(gethash "advertise-client-urls" config)
-                 "--initial-cluster" ,(gethash "initial-cluster" config)
-                 "--initial-cluster-state" "new"
-                 "--initial-cluster-token" "cl-etcd-cluster"
-                 "--peer-auto-tls"
-                 "--host-whitelist" "127.0.0.1")))
-      (setf (uiop:getenv "ETCD_ENABLE_V2") "true")
-      (setf process (run-process cmd :name "etcd" :output-callback
-                                 (lambda (s)
-                                   (monitor-etcd-output etcd s)))))))
+    (flet ((get-config-value (key)
+             (or (gethash key config)
+                 (error "etcd config missing value for '~A'" key))))
+      (setf get-put-uri (format nil "~A/v2/keys/" (get-config-value "listen-client-urls")))
+      (let ((cmd `("etcd"
+                   "--name" ,(get-config-value "name")
+                   "--initial-advertise-peer-urls" ,(get-config-value "initial-advertise-peer-urls")
+                   "--listen-peer-urls" ,(get-config-value "listen-peer-urls")
+                   "--listen-client-urls" ,(get-config-value "listen-client-urls")
+                   "--advertise-client-urls" ,(get-config-value "advertise-client-urls")
+                   "--initial-cluster" ,(get-config-value "initial-cluster")
+                   "--initial-cluster-state" "new"
+                   "--initial-cluster-token" "cl-etcd-cluster"
+                   "--peer-auto-tls"
+                   "--host-whitelist" "127.0.0.1")))
+        (setf (uiop:getenv "ETCD_ENABLE_V2") "true")
+        (setf process (run-process cmd :name "etcd" :output-callback
+                                   (lambda (s)
+                                     (monitor-etcd-output etcd s))))))))
 
 (defun put (etcd key value)
   "PUT the KEY/VALUE pair into ETCD."
