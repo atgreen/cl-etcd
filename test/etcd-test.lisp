@@ -25,9 +25,11 @@
       ;; wait until etcd is ready to accept client traffic.
       (sleep 15)
       (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:get etcd "hello"))
+      (format t "*leader?* = ~A~%" *leader?*)
       (if *leader?*
           (progn
             (sleep 15)
             (cl-etcd:put etcd "hello" "again"))
           (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:watch etcd "hello")))
+      (format t ">>> DONE - sleeping for 20 <<<")
       (sleep 20))))
