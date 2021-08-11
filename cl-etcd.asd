@@ -1,4 +1,4 @@
-;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: ETCD; Base: 10 -*-
+;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-ETCD; Base: 10 -*-
 ;;;
 ;;; Copyright (C) 2021  Anthony Green <green@moxielogic.com>
 ;;;
