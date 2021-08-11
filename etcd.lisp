@@ -130,12 +130,14 @@
                                    (monitor-etcd-output etcd s)))))))
 
 (defun put (etcd key value)
+  "PUT the KEY/VALUE pair into ETCD."
   (with-slots (get-put-uri) etcd
     (drakma:http-request (concatenate 'string get-put-uri key)
                          :method :put
                          :content (format nil "value=~S" value))))
 
 (defun get (etcd key)
+  "GET the value of KEY from ETCD."
   (let ((json (json:decode-json-from-string
                (flexi-streams:octets-to-string
                 (with-slots (get-put-uri) etcd
@@ -146,6 +148,7 @@
     (cdr (assoc :value (cdr (assoc :node json))))))
 
 (defun watch (etcd key)
+  "Like GET, but waits until value changes."
   (let ((json (json:decode-json-from-string
                (flexi-streams:octets-to-string
                 (with-slots (get-put-uri) etcd
