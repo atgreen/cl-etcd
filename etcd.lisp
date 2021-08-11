@@ -113,8 +113,8 @@
 
 (defmethod initialize-instance :after ((etcd etcd) &key)
   (with-slots (config process put-uri range-uri) etcd
-    (setf put-uri (format nil "~A/v3/kv/put" (gethash "listen-client-urls")))
-    (setf range-uri (format nil "~A/v3/kv/range" (gethash "listen-client-urls")))
+    (setf put-uri (format nil "~A/v3/kv/put" (gethash "listen-client-urls" config)))
+    (setf range-uri (format nil "~A/v3/kv/range" (gethash "listen-client-urls" config)))
     (let ((cmd `("etcd"
                  "--name" ,(gethash "name" config)
                  "--initial-advertise-peer-urls" ,(gethash "initial-advertise-peer-urls" config)
