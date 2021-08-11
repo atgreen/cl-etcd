@@ -147,7 +147,7 @@
   (let ((json (json:decode-json-from-string
                (flexi-streams:octets-to-string
                 (with-slots (get-put-uri) etcd
-                  (drakma:http-request (str:concat get-put-uri key)
+                  (drakma:http-request (concatenate 'string get-put-uri key)
                                        :method :get
                                        :parameters '(("wait" . "true"))))))))
     (print json)
