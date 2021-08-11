@@ -141,15 +141,16 @@
                 (with-slots (get-put-uri) etcd
                   (drakma:http-request (concatenate 'string get-put-uri key)
                                        :method :get))))))
-    (print json)
+    (when (assoc :error-code json)
+      (error (cdr (assoc :message json))))
     (cdr (assoc :value (cdr (assoc :node json))))))
 
 (defun watch (etcd key)
   (let ((json (json:decode-json-from-string
                (flexi-streams:octets-to-string
                 (with-slots (get-put-uri) etcd
-                  (drakma:http-request (concatenate 'string get-put-uri key)
-                                       :method :get
-                                       :parameters '(("wait" . "true"))))))))
-    (print json)
+                  (drakma:http-request (concatenate 'string get-put-uri key "?wait=true")
+                                       :method :get))))))
+    (when (assoc :error-code json)
+      (error (cdr (assoc :message json))))
     (cdr (assoc :value (cdr (assoc :node json))))))
