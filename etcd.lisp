@@ -107,9 +107,9 @@
       (setf role (subseq s (aref reg-starts 1) (aref reg-ends 1)))
       (log:debug "~A is a ~A" id role)
       (if (string= role "leader")
-          (become-leader etcd)
+          (bt:make-thread (lambda () (become-leader etcd)))
           (if (string= role "follower")
-              (become-follower etcd))))))
+              (bt:make-thread (lambda () (become-follower etcd))))))))
 
 (defmethod initialize-instance :after ((etcd etcd) &key)
   (with-slots (config process put-uri range-uri) etcd
