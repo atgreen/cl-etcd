@@ -102,14 +102,14 @@
     (unless id
       (cl-ppcre:do-scans (match-start match-end reg-starts reg-ends +etcd-member-id-regex+ s)
         (setf id (subseq s (aref reg-starts 0) (aref reg-ends 0)))
-        (log:info "etcd node ID: ~A" id)))
+        (log:debug "etcd node ID: ~A" id)))
     (cl-ppcre:do-scans (match-start match-end reg-starts reg-ends +became-regex+ s)
       (setf role (subseq s (aref reg-starts 1) (aref reg-ends 1)))
+      (log:debug "~A is a ~A" id role)
       (if (string= role "leader")
           (become-leader etcd)
           (if (string= role "follower")
-              (become-follower etcd)))
-      (log:info "~A is a ~A" id role))))
+              (become-follower etcd))))))
 
 (defmethod initialize-instance :after ((etcd etcd) &key)
   (with-slots (config process put-uri range-uri) etcd
@@ -123,7 +123,9 @@
                  "--advertise-client-urls" ,(gethash "advertise-client-urls" config)
                  "--initial-cluster" ,(gethash "initial-cluster" config)
                  "--initial-cluster-state" "new"
-                 "--initial-cluster-token" "cl-etcd-cluster")))
+                 "--initial-cluster-token" "cl-etcd-cluster"
+                 "--peer-auto-tls"
+                 "--host-whitelist" "127.0.0.1")))
       (setf process (run-process cmd :name "etcd" :output-callback
                                  (lambda (s)
                                    (monitor-etcd-output etcd s)))))))
@@ -132,7 +134,6 @@
   (let ((json (json:encode-json-to-string
                `((:KEY . ,(cl-base64:string-to-base64-string key))
                  (:VALUE . ,(cl-base64:string-to-base64-string value))))))
-    (log:info json)
     (with-slots (put-uri) etcd
       (drakma:http-request put-uri
                            :method :post
