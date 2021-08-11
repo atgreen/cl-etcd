@@ -152,7 +152,7 @@
 
 
 (defun get (etcd key)
-  (%get etcd key nil))
+  (%get etcd key `(("wait" . "false"))))
 
 (defun wait (etcd key)
   (%get etcd key `(("wait" . "true"))))
