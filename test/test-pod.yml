@@ -7,7 +7,7 @@ metadata:
 spec:
   containers:
   - name: etcd-test1
-    image: localhost/etcd-test:latest
+    image: localhost/cl-etcd-test:latest
     ports:
     - containerPort: 2380
       hostPort: 2380
@@ -23,7 +23,7 @@ spec:
       readOnlyRootFilesystem: false
       seLinuxOptions: {}
   - name: etcd-test2
-    image: localhost/etcd-test:latest
+    image: localhost/cl-etcd-test:latest
     ports:
     - containerPort: 2380
       hostPort: 2480
@@ -39,7 +39,7 @@ spec:
       readOnlyRootFilesystem: false
       seLinuxOptions: {}
   - name: etcd-test3
-    image: localhost/etcd-test:latest
+    image: localhost/cl-etcd-test:latest
     ports:
     - containerPort: 2380
       hostPort: 2580
