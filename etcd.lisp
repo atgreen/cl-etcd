@@ -111,7 +111,7 @@
               (bt:make-thread (lambda () (become-follower etcd))))))))
 
 (defmethod initialize-instance :after ((etcd etcd) &key)
-  (with-slots (config process put-uri range-uri) etcd
+  (with-slots (config process get-put-uri) etcd
     (setf get-put-uri (format nil "~A/v2/keys/" (gethash "listen-client-urls" config)))
     (let ((cmd `("etcd"
                  "--name" ,(gethash "name" config)
