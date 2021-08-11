@@ -98,7 +98,6 @@
   (cl-ppcre:create-scanner ".*local-member-id...([0-9a-f]+)[^0-9a-f].*"))
 
 (defun monitor-etcd-output (etcd s)
-  (print s)
   (with-slots (id role) etcd
     (unless id
       (cl-ppcre:do-scans (match-start match-end reg-starts reg-ends +etcd-member-id-regex+ s)
@@ -125,12 +124,11 @@
                  "--initial-cluster" ,(gethash "initial-cluster" config)
                  "--initial-cluster-state" "new"
                  "--initial-cluster-token" "cl-etcd-cluster"
+                 "--peer-auto-tls"
                  "--host-whitelist" "127.0.0.1")))
       (setf process (run-process cmd :name "etcd" :output-callback
                                  (lambda (s)
                                    (monitor-etcd-output etcd s)))))))
-
-;                 "--peer-auto-tls"
 
 (defun put (etcd key value)
   (let ((json (json:encode-json-to-string
