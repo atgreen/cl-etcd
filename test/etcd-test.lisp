@@ -6,11 +6,11 @@
 (in-package :etcd-test)
 
 (defmethod cl-etcd:become-leader ((etcd cl-etcd:etcd))
-  (cl-etcd:put etcd "hello" "world")
-  (format t "**** I AM THE LEADER ***********"))
+  (format t "**** I AM THE LEADER ***********~%")
+  (cl-etcd:put etcd "hello" "world"))
 
 (defmethod cl-etcd:become-follower ((etcd cl-etcd:etcd))
-  (format t "**** I AM A FOLLOWER ***********"))
+  (format t "**** I AM A FOLLOWER ***********~%"))
 
 (defun start ()
   (let ((config (cl-toml:parse
@@ -18,6 +18,7 @@
 				                   :external-format :latin-1)))
         (etcd nil))
     (cl-etcd:with-etcd (etcd (gethash "etcd" config))
-      (sleep 10)
-      (format t "hello: ~A~%" (cl-etcd:get etcd "hello"))
-      (sleep 240))))
+      ;; Future versions shouldn't need this sleep.  with-etcd should
+      ;; wait until etcd is ready to accept client traffic.
+      (sleep 5)
+      (format t "hello: ~A~%" (cl-etcd:get etcd "hello")))))
