@@ -60,7 +60,7 @@ jobs:
     - name: Test
       run: |
         podman play kube test/test-pod.yml
-        sleep 30
+        sleep 60
         podman ps
         podman logs etcd-test-pod-etcd-test1
         podman logs etcd-test-pod-etcd-test2
