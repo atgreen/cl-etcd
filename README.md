@@ -1,5 +1,7 @@
 # cl-etcd
 
+[![Build Status](https://github.com/atgreen/cl-etcd/actions/workflows/test.yml/badge.svg)](https://github.com/atgreen/cl-etcd/actions)
+
 This is a WIP experiment.
 
 The purpose of `cl-etcd` is to simplify writing distributed apps in
