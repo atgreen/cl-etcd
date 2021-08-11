@@ -1,6 +1,6 @@
 # cl-etcd
 
-[![Build Status](https://github.com/atgreen/cl-etcd/actions/workflows/test.yml/badge.svg)](https://github.com/atgreen/cl-etcd/actions)
+[![Build Status](https://github.com/atgreen/cl-etcd/actions/workflows/test.yaml/badge.svg)](https://github.com/atgreen/cl-etcd/actions)
 
 This is a WIP experiment.
 
