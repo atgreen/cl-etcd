@@ -124,11 +124,13 @@
                  "--initial-cluster-token" "cl-etcd-cluster"
                  "--peer-auto-tls"
                  "--host-whitelist" "127.0.0.1")))
+      (setf (uiop:getenv "ETCD_ENABLE_V2") "true")
       (setf process (run-process cmd :name "etcd" :output-callback
                                  (lambda (s)
                                    (monitor-etcd-output etcd s)))))))
 
 (defun put (etcd key value)
+  (print (concatenate 'string get-put-uri key))
   (with-slots (get-put-uri) etcd
     (drakma:http-request (concatenate 'string get-put-uri key)
                          :method :put
