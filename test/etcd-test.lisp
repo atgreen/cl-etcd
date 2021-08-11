@@ -28,6 +28,6 @@
       (if *leader?*
           (progn
             (sleep 15)
-            (cl:etcd:put etcd "hello" "again"))
+            (cl-etcd:put etcd "hello" "again"))
           (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:wait etcd "hello")))
       (sleep 15))))
