@@ -76,8 +76,7 @@
 (defclass etcd ()
   ((config :reader config :initarg :config)
    (process :reader process)
-   (put-uri :reader put-uri)
-   (range-uri :reader range-uri)
+   (get-put-uri :reader get-put-uri)
    (id :reader id :initform nil)
    (role :reader role)))
 
@@ -113,8 +112,7 @@
 
 (defmethod initialize-instance :after ((etcd etcd) &key)
   (with-slots (config process put-uri range-uri) etcd
-    (setf put-uri (format nil "~A/v3/kv/put" (gethash "listen-client-urls" config)))
-    (setf range-uri (format nil "~A/v3/kv/range" (gethash "listen-client-urls" config)))
+    (setf get-put-uri (format nil "~A/v2/keys/" (gethash "listen-client-urls" config)))
     (let ((cmd `("etcd"
                  "--name" ,(gethash "name" config)
                  "--initial-advertise-peer-urls" ,(gethash "initial-advertise-peer-urls" config)
@@ -131,32 +129,26 @@
                                    (monitor-etcd-output etcd s)))))))
 
 (defun put (etcd key value)
-  (let ((json (json:encode-json-to-string
-               `((:KEY . ,(cl-base64:string-to-base64-string key))
-                 (:VALUE . ,(cl-base64:string-to-base64-string value))))))
-    (with-slots (put-uri) etcd
-      (drakma:http-request put-uri
-                           :method :post
-                           :content json))))
+  (with-slots (get-put-uri) etcd
+    (drakma:http-request (str:concat get-put-uri key)
+                         :method :put
+                         :content (format nil "value=~S" value))))
 
 (defun get (etcd key)
   (let ((json (json:decode-json-from-string
                (flexi-streams:octets-to-string
-                (with-slots (range-uri) etcd
-                  (drakma:http-request range-uri
-                                       :method :post
-                                       :content (json:encode-json-to-string
-                                                 `((:KEY . ,(cl-base64:string-to-base64-string key))))))))))
-    (cl-base64:base64-string-to-string (cdr (assoc :value (car (cdr (assoc :kvs json))))))))
+                (with-slots (get-put-uri) etcd
+                  (drakma:http-request (str:concat get-put-uri key)
+                                       :method :get))))))
+    (print json)
+    (cdr (assoc :value (cdr (assoc :node json))))))
 
-(defun wait (etcd key)
+(defun watch (etcd key)
   (let ((json (json:decode-json-from-string
                (flexi-streams:octets-to-string
-                (with-slots (range-uri) etcd
-                  (drakma:http-request range-uri
-                                       :method :post
-                                       :content (json:encode-json-to-string
-                                                 `((:KEY . ,(cl-base64:string-to-base64-string key))))
-                                       :parameters `(("wait" . "true"))))))))
+                (with-slots (get-put-uri) etcd
+                  (drakma:http-request (str:concat get-put-uri key)
+                                       :method :get
+                                       :parameters '(("wait" . "true"))))))))
     (print json)
-    (cl-base64:base64-string-to-string (cdr (assoc :value (car (cdr (assoc :kvs json))))))))
+    (cdr (assoc :value (cdr (assoc :node json))))))
