@@ -130,7 +130,7 @@
 
 (defun put (etcd key value)
   (with-slots (get-put-uri) etcd
-    (drakma:http-request (str:concat get-put-uri key)
+    (drakma:http-request (concatenate 'string get-put-uri key)
                          :method :put
                          :content (format nil "value=~S" value))))
 
@@ -138,7 +138,7 @@
   (let ((json (json:decode-json-from-string
                (flexi-streams:octets-to-string
                 (with-slots (get-put-uri) etcd
-                  (drakma:http-request (str:concat get-put-uri key)
+                  (drakma:http-request (concatenate 'string get-put-uri key)
                                        :method :get))))))
     (print json)
     (cdr (assoc :value (cdr (assoc :node json))))))
