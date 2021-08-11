@@ -139,12 +139,20 @@
                            :method :post
                            :content json))))
 
-(defun get (etcd key)
+(defun %get (etcd key parameters)
   (let ((json (json:decode-json-from-string
                (flexi-streams:octets-to-string
                 (with-slots (range-uri) etcd
                   (drakma:http-request range-uri
                                        :method :post
                                        :content (json:encode-json-to-string
-                                                 `((:KEY . ,(cl-base64:string-to-base64-string key))))))))))
+                                                 `((:KEY . ,(cl-base64:string-to-base64-string key))))
+                                       :parameters parameters))))))
     (cl-base64:base64-string-to-string (cdr (assoc :value (car (cdr (assoc :kvs json))))))))
+
+
+(defun get (etcd key)
+  (%get etcd key nil))
+
+(defun wait (etcd key)
+  (%get etcd key `(("wait" . "true"))))
