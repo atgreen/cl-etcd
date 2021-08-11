@@ -19,5 +19,5 @@
         (etcd nil))
     (cl-etcd:with-etcd (etcd (gethash "etcd" config))
       (sleep 10)
-      (print (cl-etcd:get etcd "hello"))
+      (format t "hello: ~A~%" (cl-etcd:get etcd "hello"))
       (sleep 240))))
