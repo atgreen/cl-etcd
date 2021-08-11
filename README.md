@@ -13,11 +13,18 @@ in my lisp implementation of choice make it a poor choice for a
 lisp-based raft implementation, and so we run `etcd` as an
 asynchronous child process under lisp.
 
-The `cl-etcd` package includes basic `put` and `get` functions, as
-well as the convenience macro `with-etcd` to make it easy to start-up
-and shut-down your "embedded" etcd node.  The `cl-etcd` package will
-call user defined `become-leader` and `become-follower` methods when
-the node becomes the leader or follower respectively.
+The `cl-etcd` package includes basic `put`, `get` and `watch`
+functions, as well as the convenience macro `with-etcd` to make it
+easy to start-up and shut-down your "embedded" etcd node.  The
+`cl-etcd` package will call user defined `become-leader` and
+`become-follower` methods when the node becomes the leader or follower
+respectively.
+
+Etcd will be configured for auto-TLS communication between peers,
+meaning that the inter-node traffic will be encrypted with self-signed
+certificates.  No form of authentication or encryption is currently
+performed between etcd and the client (the `cl-etcd` library code),
+however etcd is configured to only allow connections from localhost.
 
 Look in the `test` directory for examples of how to use this.  As a
 work-in-progress, it's very likely that details will change over time.
