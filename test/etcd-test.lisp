@@ -5,11 +5,12 @@
 
 (in-package :etcd-test)
 
+(defvar *leader?* nil)
+
 (defmethod cl-etcd:become-leader ((etcd cl-etcd:etcd))
   (format t "**** I AM THE LEADER ***********~%")
-  (cl-etcd:put etcd "hello" "world")
-  (sleep 20)
-  (cl-etcd:put etcd "hello" "again"))
+  (setf *leader?* t)
+  (cl-etcd:put etcd "hello" "world"))
 
 (defmethod cl-etcd:become-follower ((etcd cl-etcd:etcd))
   (format t "**** I AM A FOLLOWER ***********~%"))
@@ -24,5 +25,9 @@
       ;; wait until etcd is ready to accept client traffic.
       (sleep 15)
       (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:get etcd "hello"))
-      (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:wait etcd "hello"))
+      (if *leader?*
+          (progn
+            (sleep 15)
+            (cl:etcd:put etcd "hello" "again"))
+          (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:wait etcd "hello")))
       (sleep 15))))
