@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    name: Build, test and public image
+    name: Build and test
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -58,8 +58,6 @@ jobs:
           test/Dockerfile
 
     - name: Test
-      env:
-        SECRET_REPO: ${{ secrets.CONFIG_REPO }}
       run: |
         podman play kube test/test-pod.yml
         sleep 60
