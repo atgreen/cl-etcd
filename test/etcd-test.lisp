@@ -17,11 +17,7 @@
                  (alexandria:read-file-into-string "/etc/etcd-test/config.ini"
 				                   :external-format :latin-1)))
         (etcd nil))
-    (maphash
-     (lambda (key value)
-       (format t "config: ~A = ~A~%" key value))
-     config)
-    (cl-etcd:with-etcd (etcd config)
+    (cl-etcd:with-etcd (etcd (gethash "etcd" config))
       (sleep 10)
       (print (cl-etcd:get etcd "hello"))
       (sleep 240))))
