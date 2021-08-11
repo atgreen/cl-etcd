@@ -15,7 +15,7 @@ jobs:
     name: Build, test and public image
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@gv2
+    - uses: actions/checkout@v2
     - run: |
         git fetch --prune --unshallow --tags
 
