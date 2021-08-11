@@ -9,9 +9,9 @@ GC pauses in my lisp implementation of choice make it a poor choice
 for a lisp-based raft implementation, and so we run `etcd` as an
 asynchronous child process under lisp.
 
-The `etcd` package includes basic `put` and `get` functions, as well
+The `cl-etcd` package includes basic `put` and `get` functions, as well
 as the convenience macro `with-etcd` to make it easy to start-up and
-shut-down your `etcd` node.  The `etcd` package will call user defined
+shut-down your `etcd` node.  The `cl-etcd` package will call user defined
 `become-leader` and `become-follower` methods when the node becomes
 the leader or follower respectively.
 
