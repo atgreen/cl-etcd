@@ -98,6 +98,7 @@
   (cl-ppcre:create-scanner ".*local-member-id...([0-9a-f]+)[^0-9a-f].*"))
 
 (defun monitor-etcd-output (etcd s)
+  (print s)
   (with-slots (id role) etcd
     (unless id
       (cl-ppcre:do-scans (match-start match-end reg-starts reg-ends +etcd-member-id-regex+ s)
