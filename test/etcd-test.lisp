@@ -10,11 +10,13 @@
 
 (defvar *leader?* nil)
 
+;; This method is called when I become leader.
 (defmethod cl-etcd:become-leader ((etcd cl-etcd:etcd))
   (format t "**** I AM THE LEADER ***********~%")
   (setf *leader?* t)
   (cl-etcd:put etcd "hello" "world"))
 
+;; This method is called when I become a follower.
 (defmethod cl-etcd:become-follower ((etcd cl-etcd:etcd))
   (format t "**** I AM A FOLLOWER ***********~%")
   (setf *leader?* nil))
