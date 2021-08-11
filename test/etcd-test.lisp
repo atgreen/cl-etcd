@@ -8,7 +8,7 @@
 (defmethod cl-etcd:become-leader ((etcd cl-etcd:etcd))
   (format t "**** I AM THE LEADER ***********~%")
   (cl-etcd:put etcd "hello" "world")
-  (sleep 10)
+  (sleep 20)
   (cl-etcd:put etcd "hello" "again"))
 
 (defmethod cl-etcd:become-follower ((etcd cl-etcd:etcd))
