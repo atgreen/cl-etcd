@@ -16,7 +16,7 @@
 ;;; License along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(in-package :etcd)
+(in-package :cl-etcd)
 
 (defclass process ()
   ((pointer :initarg :pointer :reader process-pointer)
@@ -113,8 +113,8 @@
 
 (defmethod initialize-instance :after ((etcd etcd) &key)
   (with-slots (config process put-uri range-uri) etcd
-    (setf put-uri (format nil "~A/v3/kv/put" ,(gethash "listen-client-urls")))
-    (setf range-uri (format nil "~A/v3/kv/range" ,(gethash "listen-client-urls")))
+    (setf put-uri (format nil "~A/v3/kv/put" (gethash "listen-client-urls")))
+    (setf range-uri (format nil "~A/v3/kv/range" (gethash "listen-client-urls")))
     (let ((cmd `("etcd"
                  "--name" ,(gethash "name" config)
                  "--initial-advertise-peer-urls" ,(gethash "initial-advertise-peer-urls" config)

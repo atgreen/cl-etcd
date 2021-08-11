@@ -1,4 +1,4 @@
-;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: ETCD; Base: 10 -*-
+;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: DIDIT; Base: 10 -*-
 ;;;
 ;;; Copyright (C) 2021  Anthony Green <green@moxielogic.com>
 ;;;
@@ -16,19 +16,11 @@
 ;;; License along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(asdf:defsystem #:cl-etcd
-  :description "Run etcd as an asynchronous inferior process."
+(asdf:defsystem #:etcd-test
+  :description "Test etcd"
   :author "Anthony Green <green@moxielogic.com"
   :version "0"
   :serial t
-  :components ((:file "package")
-               (:file "etcd"))
-  :depends-on (:alexandria
-               :async-process
-               :bordeaux-threads
-               :cl-base64
-               :cl-json
-               :cl-ppcre
-               :drakma
-               :flexi-streams
-               :log4cl))
+  :components ((:file "etcd-test"))
+  :depends-on (:cl-etcd
+               :cl-toml))

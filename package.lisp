@@ -16,7 +16,7 @@
 ;;; License along with this program.  If not, see
 ;;; <http://www.gnu.org/licenses/>.
 
-(defpackage #:etcd
+(defpackage #:cl-etcd
   (:use #:cl)
   (:shadow #:package #:get)
   (:export #:with-etcd #:etcd #:put #:get #:become-leader #:become-follower))
