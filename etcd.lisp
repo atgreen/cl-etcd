@@ -130,8 +130,8 @@
                                    (monitor-etcd-output etcd s)))))))
 
 (defun put (etcd key value)
-  (print (concatenate 'string get-put-uri key))
   (with-slots (get-put-uri) etcd
+    (print (concatenate 'string get-put-uri key))
     (drakma:http-request (concatenate 'string get-put-uri key)
                          :method :put
                          :content (format nil "value=~S" value))))
