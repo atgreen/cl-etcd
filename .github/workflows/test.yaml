@@ -1,0 +1,67 @@
+name: Test
+
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build, test and public image
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@gv2
+    - run: |
+        git fetch --prune --unshallow --tags
+
+    - name: Get base hash
+      id: base-hash
+      run: echo "::set-output name=base-hash::$(sha512sum test/Dockerfile.base | cut -b 1-8)"
+
+    - name: Test if base exists
+      id: base-exists
+      run: echo "::set-output name=base-exists::$(podman manifest inspect quay.io/moxielogic/cl-etcd-test-base:${{ steps.base-hash.outputs.base-hash }} > /dev/null 2>&1 && echo 'EXISTS')"
+
+    - name: Prepare base image
+      id: build-base
+      uses: redhat-actions/buildah-build@v2
+      with:
+        image: cl-etcd-test-base
+        tags: ${{ steps.base-hash.outputs.base-hash }} latest
+        dockerfiles: |
+          test/Dockerfile.base
+      if: ${{ steps.base-exists.outputs.base-exists != 'EXISTS' }}
+
+    - name: Push base to quay.io
+      id: push-base-to-quay
+      uses: redhat-actions/push-to-registry@v2
+      with:
+        image: ${{ steps.build-base.outputs.image }}
+        tags: ${{ steps.build-base.outputs.tags }}
+        registry: quay.io/moxielogic
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+      if: ${{ steps.base-exists.outputs.base-exists != 'EXISTS' }}
+
+    - name: Build test image
+      id: build-image
+      uses: redhat-actions/buildah-build@v2
+      with:
+        image: cl-etcd-test
+        tags: latest
+        dockerfiles: |
+          test/Dockerfile
+
+    - name: Test
+      env:
+        SECRET_REPO: ${{ secrets.CONFIG_REPO }}
+      run: |
+        podman play kube test/test-pod.yml
+        sleep 60
+        podman ps
+        podman logs etcd-test-pod-etcd-test1

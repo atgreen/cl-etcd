@@ -1,6 +1,5 @@
-FROM quay.io/containerlisp/lisp-10-ubi8
+FROM quay.io/moxielogic/cl-etcd-test-base
 
-RUN curl -L https://github.com/etcd-io/etcd/releases/download/v3.5.0/etcd-v3.5.0-linux-amd64.tar.gz | tar xvfz - && mkdir /opt/app-root/src/bin && mv etcd-v3.5.0-linux-amd64/* /opt/app-root/src/bin
 COPY test /tmp/src
 COPY . /opt/app-root/quicklisp/local-projects/cl-etcd
 RUN ls -l /opt/app-root/quicklisp/local-projects/cl-etcd
