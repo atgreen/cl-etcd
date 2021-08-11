@@ -62,6 +62,9 @@ jobs:
         podman play kube test/test-pod.yml
         sleep 60
         podman ps
+        echo ==== container 1 ============================================
         podman logs etcd-test-pod-etcd-test1
+        echo ==== container 2 ============================================
         podman logs etcd-test-pod-etcd-test2
+        echo ==== container 3 ============================================
         podman logs etcd-test-pod-etcd-test3

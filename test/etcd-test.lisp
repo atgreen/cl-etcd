@@ -31,5 +31,5 @@
             (sleep 15)
             (cl-etcd:put etcd "hello" "again"))
           (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:watch etcd "hello")))
-      (format t ">>> DONE - sleeping for 20 <<<")
-      (sleep 20))))
+      (format t ">>> DONE - sleeping for 40 <<<")
+      (sleep 40))))
