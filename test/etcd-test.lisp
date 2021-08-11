@@ -7,7 +7,9 @@
 
 (defmethod cl-etcd:become-leader ((etcd cl-etcd:etcd))
   (format t "**** I AM THE LEADER ***********~%")
-  (cl-etcd:put etcd "hello" "world"))
+  (cl-etcd:put etcd "hello" "world")
+  (sleep 10)
+  (cl-etcd:put etcd "hello" "again"))
 
 (defmethod cl-etcd:become-follower ((etcd cl-etcd:etcd))
   (format t "**** I AM A FOLLOWER ***********~%"))
@@ -22,4 +24,5 @@
       ;; wait until etcd is ready to accept client traffic.
       (sleep 15)
       (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:get etcd "hello"))
+      (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:wait etcd "hello"))
       (sleep 15))))
