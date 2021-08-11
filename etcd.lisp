@@ -125,11 +125,12 @@
                  "--initial-cluster" ,(gethash "initial-cluster" config)
                  "--initial-cluster-state" "new"
                  "--initial-cluster-token" "cl-etcd-cluster"
-                 "--peer-auto-tls"
                  "--host-whitelist" "127.0.0.1")))
       (setf process (run-process cmd :name "etcd" :output-callback
                                  (lambda (s)
                                    (monitor-etcd-output etcd s)))))))
+
+;                 "--peer-auto-tls"
 
 (defun put (etcd key value)
   (let ((json (json:encode-json-to-string
