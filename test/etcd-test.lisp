@@ -1,3 +1,6 @@
+;; Simple example.  Warning -- not much thought was put into
+;; concurrency issues.
+
 (defpackage #:etcd-test
   (:use #:cl)
   (:shadow #:package)
@@ -13,7 +16,8 @@
   (cl-etcd:put etcd "hello" "world"))
 
 (defmethod cl-etcd:become-follower ((etcd cl-etcd:etcd))
-  (format t "**** I AM A FOLLOWER ***********~%"))
+  (format t "**** I AM A FOLLOWER ***********~%")
+  (setf *leader?* nil))
 
 (defun start ()
   (let ((config (cl-toml:parse
@@ -25,7 +29,6 @@
       ;; wait until etcd is ready to accept client traffic.
       (sleep 15)
       (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:get etcd "hello"))
-      (format t "*leader?* = ~A~%" *leader?*)
       (if *leader?*
           (progn
             (sleep 15)
