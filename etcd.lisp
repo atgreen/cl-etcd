@@ -158,4 +158,5 @@
                                        :content (json:encode-json-to-string
                                                  `((:KEY . ,(cl-base64:string-to-base64-string key))))
                                        :parameters `(("wait" . "true"))))))))
+    (print json)
     (cl-base64:base64-string-to-string (cdr (assoc :value (car (cdr (assoc :kvs json))))))))
