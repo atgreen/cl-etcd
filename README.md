@@ -20,8 +20,8 @@ easy to start-up and shut-down your "embedded" etcd node.  The
 `become-follower` methods when the node becomes the leader or follower
 respectively.
 
-Etcd will be configured for auto-TLS communication between peers,
-meaning that the inter-node traffic will be encrypted with self-signed
+Etcd is configured for auto-TLS communication between peers, meaning
+that the inter-node traffic will be encrypted with self-signed
 certificates.  No form of authentication or encryption is currently
 performed between etcd and the client (the `cl-etcd` library code),
 however etcd is configured to only allow connections from localhost.
