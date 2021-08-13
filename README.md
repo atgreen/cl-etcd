@@ -6,7 +6,7 @@ This is a WIP experiment.
 
 The purpose of `cl-etcd` is to simplify the writing of distributed
 applications in Common Lisp.  [etcd](https://etcd.io/) is a strongly
-consistent, distributed key-value store.  At it's core it is an
+consistent, distributed key-value store.  At it's core is an
 implementation of the [raft consensus
 algorithm](https://en.wikipedia.org/wiki/Raft_(algorithm)).  GC pauses
 in my lisp implementation of choice make it a poor choice for a
