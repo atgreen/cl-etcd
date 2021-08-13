@@ -2,8 +2,6 @@
 
 [![Build Status](https://github.com/atgreen/cl-etcd/actions/workflows/test.yaml/badge.svg)](https://github.com/atgreen/cl-etcd/actions)
 
-This is a WIP experiment.
-
 The purpose of `cl-etcd` is to simplify the writing of distributed
 applications in Common Lisp.  [etcd](https://etcd.io/) is a strongly
 consistent, distributed key-value store.  At it's core is an
