@@ -86,6 +86,11 @@
 (defgeneric become-follower (etcd))
 
 (defmacro with-etcd ((etcd config) &body body)
+  "Create an etcd subprocess, ETCD.  CONFIG is a hashtable of etcd
+config options: name, initial-advertise-peer-urls, listen-peer-urls,
+listen-client-urls, advertise-client-urls, initial-cluster,
+initial-cluster-state, initial-cluster-token.  Otherwise, CONFIG is
+nil and we are creating a non-clustered etcd instance."
   `(let ((,etcd (make-instance 'etcd :config ,config)))
      (unwind-protect
           (progn
@@ -99,6 +104,10 @@
   (cl-ppcre:create-scanner ".*local-member-id...([0-9a-f]+)[^0-9a-f].*"))
 
 (defun monitor-etcd-output (etcd s)
+  ;; This function is called to process output from the etcd
+  ;; subprocess.  Only one thread should ever be calling this
+  ;; function, so we don't need to protect access to internal state
+  ;; (eg. READY).
   (with-slots (ready start-semaphore id role) etcd
     (unless ready
       (when (search "ready to serve client requests" s)
@@ -122,17 +131,19 @@
              (or (gethash key config)
                  (error "etcd config missing value for '~A'" key))))
       (setf get-put-uri (format nil "~A/v2/keys/" (get-config-value "listen-client-urls")))
-      (let ((cmd `("etcd"
-                   "--name" ,(get-config-value "name")
-                   "--initial-advertise-peer-urls" ,(get-config-value "initial-advertise-peer-urls")
-                   "--listen-peer-urls" ,(get-config-value "listen-peer-urls")
-                   "--listen-client-urls" ,(get-config-value "listen-client-urls")
-                   "--advertise-client-urls" ,(get-config-value "advertise-client-urls")
-                   "--initial-cluster" ,(get-config-value "initial-cluster")
-                   "--initial-cluster-state" "new"
-                   "--initial-cluster-token" "cl-etcd-cluster"
-                   "--peer-auto-tls"
-                   "--host-whitelist" "127.0.0.1")))
+      (let ((cmd (if config
+                     `("etcd"
+                       "--name" ,(get-config-value "name")
+                       "--initial-advertise-peer-urls" ,(get-config-value "initial-advertise-peer-urls")
+                       "--listen-peer-urls" ,(get-config-value "listen-peer-urls")
+                       "--listen-client-urls" ,(get-config-value "listen-client-urls")
+                       "--advertise-client-urls" ,(get-config-value "advertise-client-urls")
+                       "--initial-cluster" ,(get-config-value "initial-cluster")
+                       "--initial-cluster-state" "new"
+                       "--initial-cluster-token" "cl-etcd-cluster"
+                       "--peer-auto-tls"
+                       "--host-whitelist" "127.0.0.1")
+                     `("etcd" "--host-whitelist" "127.0.0.1"))))
         (setf (uiop:getenv "ETCD_ENABLE_V2") "true")
         (setf process (run-process cmd :name "etcd" :output-callback
                                    (lambda (s)
@@ -147,7 +158,8 @@
                          :content (format nil "value=~S" value))))
 
 (defun get (etcd key)
-  "GET the value of KEY from ETCD."
+  "GET the value of KEY from ETCD.  Returns NIL if KEY not found.
+Throws an error on unexpected errors."
   (block get
     (let* ((code 0)
            (json (json:decode-json-from-string
