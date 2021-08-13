@@ -18,5 +18,5 @@
 
 (defpackage #:cl-etcd
   (:use #:cl)
-  (:shadow #:package #:get)
-  (:export #:with-etcd #:etcd #:id #:put #:get #:watch #:become-leader #:become-follower))
+  (:shadow #:package)
+  (:export #:with-etcd #:etcd #:id #:get-etcd #:watch #:become-leader #:become-follower))

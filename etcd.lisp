@@ -150,6 +150,14 @@ nil and we are creating a non-clustered etcd instance."
                                      (monitor-etcd-output etcd s))))
         (bt:wait-on-semaphore start-semaphore)))))
 
+(defun (setf get-etcd) (key value etcd)
+  "PUT the KEY/VALUE pair into ETCD."
+  (with-slots (get-put-uri) etcd
+    (drakma:http-request (concatenate 'string get-put-uri key)
+                         :method :put
+                         :content (format nil "value=~S" value))))
+
+
 (defun put (etcd key value)
   "PUT the KEY/VALUE pair into ETCD."
   (with-slots (get-put-uri) etcd
@@ -157,7 +165,7 @@ nil and we are creating a non-clustered etcd instance."
                          :method :put
                          :content (format nil "value=~S" value))))
 
-(defun get (etcd key)
+(defun get-etcd (key etcd)
   "GET the value of KEY from ETCD.  Returns NIL if KEY not found.
 Throws an error on unexpected errors."
   (block get
@@ -169,7 +177,7 @@ Throws an error on unexpected errors."
                          (drakma:http-request (concatenate 'string get-put-uri key)
                                               :method :get)
                        (when (= error-code 404)
-                         (return-from-block get nil))
+                         (return-from get nil))
                        (setf code error-code)
                        answer))))))
       (when (not (= code 200))

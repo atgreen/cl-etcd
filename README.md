@@ -11,11 +11,15 @@ in my lisp implementation of choice make it a poor choice for a
 lisp-based raft implementation, and so we run `etcd` as an
 asynchronous child process under lisp.
 
-The `cl-etcd` package includes basic `put`, `get` and `watch`
-functions, as well as the convenience macro `with-etcd` to make it
-easy to start-up and shut-down your "embedded" etcd node.  You can
-supply optional `:on-leader` and `:on-follower` lambdas that will get
-called when the node becomes the leader or follower respectively.
+The `cl-etcd` package includes basic `get-etcd` and `watch` functions,
+as well as the convenience macro `with-etcd` to make it easy to
+start-up and shut-down your "embedded" etcd node.  `get-etcd` is
+`setf`-able so you can easily modify the key-value store the Lisp way.
+
+If you want to be notified about leader state changes on your node,
+supply the optional `:on-leader` and `:on-follower` lambdas, and they
+will be called when the node becomes a cluster leader or follower
+respectively.
 
 Etcd is configured for auto-TLS communication between peers, meaning
 that the inter-node traffic will be encrypted with self-signed
@@ -25,9 +29,9 @@ however etcd is configured to only allow connections from localhost.
 
 Here's a trivial example of a single node:
 
-    (cl-etcd:with-etcd (etcd nil)
-      (cl-etcd:put etcd "hello" "world")
-      (cl-etcd:get etcd "hello"))
+    (with-etcd (etcd nil)
+      (setf (get-etcd "hello" etcd) "world")
+      (get-etcd "hello" etcd))
 
 To be notified on state changes to leader or follower, do this:
 
@@ -37,9 +41,9 @@ To be notified on state changes to leader or follower, do this:
     (defun become-follower (etcd)
       (print "I'm a follower!"))
 
-    (cl-etcd:with-etcd (etcd nil :on-leader #'become-leader :on-follower #'become-follower)
-      (cl-etcd:put etcd "hello" "world")
-      (cl-etcd:get etcd "hello"))
+    (with-etcd (etcd nil :on-leader #'become-leader :on-follower #'become-follower)
+      (setf (get-etcd "hello" etcd) "world")
+      (get-etcd "hello" etcd))
 
 A single instance is pretty useless, so let's make a 3-node cluster!
 The second argument to `with-etcd` is a hashtable of etcd arguments.
@@ -79,12 +83,12 @@ make three config files like so...
 Now, in each process, load the appropriate config file:
 
     (defun become-leader (etcd)
-      (cl-etcd:put etcd "hello" "world"))
+      (setf (get-etcd "hello" etcd) "world"))
 
     (let ((config (cdr (assoc :etcd (cl-toml:parse-file "config1.ini")))))
-      (cl-etcd:with-etcd (etcd config :on-leader #'become-leader :on-follower #'become-follower)
+      (with-etcd (etcd config :on-leader #'become-leader :on-follower #'become-follower)
         (sleep 3)
-        (cl-etcd:get etcd "hello"))
+        (get-etcd "hello" etcd)))
 
 As this is a work-in-progress, details may change, and feedback is always welcome.
 
