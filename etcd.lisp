@@ -85,6 +85,12 @@
 (defgeneric become-leader (etcd))
 (defgeneric become-follower (etcd))
 
+(defmethod become-leader ((etcd etcd))
+  )
+
+(defmethod become-follower ((etcd etcd))
+  )
+
 (defmacro with-etcd ((etcd config) &body body)
   "Create an etcd subprocess, ETCD.  CONFIG is a hashtable of etcd
 config options: name, initial-advertise-peer-urls, listen-peer-urls,
@@ -130,7 +136,10 @@ nil and we are creating a non-clustered etcd instance."
     (flet ((get-config-value (key)
              (or (gethash key config)
                  (error "etcd config missing value for '~A'" key))))
-      (setf get-put-uri (format nil "~A/v2/keys/" (get-config-value "listen-client-urls")))
+      (setf get-put-uri (format nil "~A/v2/keys/"
+                                (if config
+                                    (get-config-value "listen-client-urls")
+                                    "http://127.0.0.1:2379")))
       (let ((cmd (if config
                      `("etcd"
                        "--name" ,(get-config-value "name")
@@ -174,7 +183,8 @@ Throws an error on unexpected errors."
                        answer))))))
       (when (not (= code 200))
         (error (cdr (assoc :message json))))
-      (cdr (assoc :value (cdr (assoc :node json)))))))
+      (let ((s (cdr (assoc :value (cdr (assoc :node json))))))
+        (subseq s 1 (- (length s) 1))))))
 
 (defun watch (etcd key)
   "Like GET, but waits until value changes."
