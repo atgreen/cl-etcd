@@ -81,7 +81,7 @@ make three config files like so...
 Now, in each process, load the appropriate config file:
 
     (defun become-leader (etcd)
-      (put etcd "hello" "world"))
+      (cl-etcd:put etcd "hello" "world"))
 
     (let ((config (cdr (assoc :etcd (cl-toml:parse-file "config1.ini")))))
       (cl-etcd:with-etcd (etcd config :on-leader #'become-leader :on-follower #'become-follower)
