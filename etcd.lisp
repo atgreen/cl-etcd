@@ -85,12 +85,6 @@
 (defgeneric become-leader (etcd))
 (defgeneric become-follower (etcd))
 
-(defmethod become-leader ((etcd etcd))
-  )
-
-(defmethod become-follower ((etcd etcd))
-  )
-
 (defmacro with-etcd ((etcd config) &body body)
   "Create an etcd subprocess, ETCD.  CONFIG is a hashtable of etcd
 config options: name, initial-advertise-peer-urls, listen-peer-urls,
