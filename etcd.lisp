@@ -78,6 +78,8 @@
    (process :reader process)
    (get-put-uri :reader get-put-uri)
    (id :reader id :initform nil)
+   (ready :reader ready :initform nil)
+   (start-semaphore :reader start-semaphore :initform (bt:make-semaphore))
    (role :reader role)))
 
 (defgeneric become-leader (etcd))
@@ -97,7 +99,11 @@
   (cl-ppcre:create-scanner ".*local-member-id...([0-9a-f]+)[^0-9a-f].*"))
 
 (defun monitor-etcd-output (etcd s)
-  (with-slots (id role) etcd
+  (with-slots (ready start-semaphore id role) etcd
+    (unless ready
+      (when (search "ready to serve client requests" s)
+        (setf ready t)
+        (bt:signal-semaphore start-semaphore)))
     (unless id
       (cl-ppcre:do-scans (match-start match-end reg-starts reg-ends +etcd-member-id-regex+ s)
         (setf id (subseq s (aref reg-starts 0) (aref reg-ends 0)))
@@ -110,9 +116,8 @@
           (if (string= role "follower")
               (bt:make-thread (lambda () (become-follower etcd))))))))
 
-
 (defmethod initialize-instance :after ((etcd etcd) &key)
-  (with-slots (config process get-put-uri) etcd
+  (with-slots (config start-semaphore process get-put-uri) etcd
     (flet ((get-config-value (key)
              (or (gethash key config)
                  (error "etcd config missing value for '~A'" key))))
@@ -131,7 +136,8 @@
         (setf (uiop:getenv "ETCD_ENABLE_V2") "true")
         (setf process (run-process cmd :name "etcd" :output-callback
                                    (lambda (s)
-                                     (monitor-etcd-output etcd s))))))))
+                                     (monitor-etcd-output etcd s))))
+        (bt:wait-on-semaphore start-semaphore)))))
 
 (defun put (etcd key value)
   "PUT the KEY/VALUE pair into ETCD."
@@ -142,14 +148,21 @@
 
 (defun get (etcd key)
   "GET the value of KEY from ETCD."
-  (let ((json (json:decode-json-from-string
-               (flexi-streams:octets-to-string
-                (with-slots (get-put-uri) etcd
-                  (drakma:http-request (concatenate 'string get-put-uri key)
-                                       :method :get))))))
-    (when (assoc :error-code json)
-      (error (cdr (assoc :message json))))
-    (cdr (assoc :value (cdr (assoc :node json))))))
+  (block get
+    (let* ((code 0)
+           (json (json:decode-json-from-string
+                  (flexi-streams:octets-to-string
+                   (with-slots (get-put-uri) etcd
+                     (multiple-value-bind (answer error-code)
+                         (drakma:http-request (concatenate 'string get-put-uri key)
+                                              :method :get)
+                       (when (= error-code 404)
+                         (return-from-block get nil))
+                       (setf code error-code)
+                       answer))))))
+      (when (not (= code 200))
+        (error (cdr (assoc :message json))))
+      (cdr (assoc :value (cdr (assoc :node json)))))))
 
 (defun watch (etcd key)
   "Like GET, but waits until value changes."
