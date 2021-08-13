@@ -78,20 +78,19 @@
    (process :reader process)
    (get-put-uri :reader get-put-uri)
    (id :reader id :initform nil)
+   (on-leader :reader on-leader :initarg :on-leader :initform nil)
+   (on-follower :reader on-follower :initarg :on-follower :initform nil)
    (ready :reader ready :initform nil)
    (start-semaphore :reader start-semaphore :initform (bt:make-semaphore))
    (role :reader role)))
 
-(defgeneric become-leader (etcd))
-(defgeneric become-follower (etcd))
-
-(defmacro with-etcd ((etcd config) &body body)
+(defmacro with-etcd ((etcd config &key on-leader on-follower) &body body)
   "Create an etcd subprocess, ETCD.  CONFIG is a hashtable of etcd
 config options: name, initial-advertise-peer-urls, listen-peer-urls,
 listen-client-urls, advertise-client-urls, initial-cluster,
 initial-cluster-state, initial-cluster-token.  Otherwise, CONFIG is
 nil and we are creating a non-clustered etcd instance."
-  `(let ((,etcd (make-instance 'etcd :config ,config)))
+  `(let ((,etcd (make-instance 'etcd :config ,config :on-leader ,on-leader :on-follower ,on-follower)))
      (unwind-protect
           (progn
             ,@body)
@@ -108,7 +107,7 @@ nil and we are creating a non-clustered etcd instance."
   ;; subprocess.  Only one thread should ever be calling this
   ;; function, so we don't need to protect access to internal state
   ;; (eg. READY).
-  (with-slots (ready start-semaphore id role) etcd
+  (with-slots (ready start-semaphore id role on-leader on-follower) etcd
     (unless ready
       (when (search "ready to serve client requests" s)
         (setf ready t)
@@ -121,9 +120,9 @@ nil and we are creating a non-clustered etcd instance."
       (setf role (subseq s (aref reg-starts 1) (aref reg-ends 1)))
       (log:debug "~A is a ~A" id role)
       (if (string= role "leader")
-          (bt:make-thread (lambda () (become-leader etcd)))
+          (when on-leader (bt:make-thread (lambda () (funcall on-leader etcd))))
           (if (string= role "follower")
-              (bt:make-thread (lambda () (become-follower etcd))))))))
+              (when on-follower (bt:make-thread (lambda () (funcall on-follower etcd)))))))))
 
 (defmethod initialize-instance :after ((etcd etcd) &key)
   (with-slots (config start-semaphore process get-put-uri) etcd

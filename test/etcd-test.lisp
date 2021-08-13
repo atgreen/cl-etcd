@@ -11,13 +11,13 @@
 (defvar *leader?* nil)
 
 ;; This method is called when I become leader.
-(defmethod cl-etcd:become-leader ((etcd cl-etcd:etcd))
+(defun become-leader ((etcd cl-etcd:etcd))
   (format t "**** I AM THE LEADER ***********~%")
   (setf *leader?* t)
   (cl-etcd:put etcd "hello" "world"))
 
 ;; This method is called when I become a follower.
-(defmethod cl-etcd:become-follower ((etcd cl-etcd:etcd))
+(defun become-follower ((etcd cl-etcd:etcd))
   (format t "**** I AM A FOLLOWER ***********~%")
   (setf *leader?* nil))
 
@@ -26,7 +26,9 @@
                  (alexandria:read-file-into-string "/etc/etcd-test/config.ini"
 				                   :external-format :latin-1)))
         (etcd nil))
-    (cl-etcd:with-etcd (etcd (gethash "etcd" config))
+    (cl-etcd:with-etcd (etcd (gethash "etcd" config)
+                        :on-leader #'become-leader
+                        :on-follower #'become-follower)
       ;; Future versions shouldn't need this sleep.  with-etcd should
       ;; wait until etcd is ready to accept client traffic.
       (sleep 15)
