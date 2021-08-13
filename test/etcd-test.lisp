@@ -14,7 +14,7 @@
 (defun become-leader (etcd)
   (format t "**** I AM THE LEADER ***********~%")
   (setf *leader?* t)
-  (cl-etcd:put etcd "hello" "world"))
+  (setf (cl-etcd:get-etcd "hello" etcd) "world"))
 
 ;; This method is called when I become a follower.
 (defun become-follower (etcd)
@@ -36,7 +36,7 @@
       (if *leader?*
           (progn
             (sleep 15)
-            (cl-etcd:put etcd "hello" "again"))
+            (setf (cl-etcd:get-etcd "hello" etcd) "again"))
           (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:watch etcd "hello")))
       (format t ">>> DONE - sleeping for 40 <<<")
       (sleep 40))))
