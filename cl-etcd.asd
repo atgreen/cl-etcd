@@ -18,7 +18,7 @@
 
 (asdf:defsystem #:cl-etcd
   :description "Run etcd as an asynchronous inferior process."
-  :author "Anthony Green <green@moxielogic.com"
+  :author "Anthony Green <green@moxielogic.com>"
   :version "0"
   :serial t
   :components ((:file "package")
@@ -30,5 +30,4 @@
                :cl-json
                :cl-ppcre
                :drakma
-               :flexi-streams
-               :log4cl))
+               :flexi-streams))

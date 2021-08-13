@@ -114,11 +114,9 @@ nil and we are creating a non-clustered etcd instance."
         (bt:signal-semaphore start-semaphore)))
     (unless id
       (cl-ppcre:do-scans (match-start match-end reg-starts reg-ends +etcd-member-id-regex+ s)
-        (setf id (subseq s (aref reg-starts 0) (aref reg-ends 0)))
-        (log:debug "etcd node ID: ~A" id)))
+        (setf id (subseq s (aref reg-starts 0) (aref reg-ends 0)))))
     (cl-ppcre:do-scans (match-start match-end reg-starts reg-ends +became-regex+ s)
       (setf role (subseq s (aref reg-starts 1) (aref reg-ends 1)))
-      (log:debug "~A is a ~A" id role)
       (if (string= role "leader")
           (when on-leader (bt:make-thread (lambda () (funcall on-leader etcd))))
           (if (string= role "follower")
