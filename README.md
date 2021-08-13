@@ -16,7 +16,7 @@ asynchronous child process under lisp.
 The `cl-etcd` package includes basic `put`, `get` and `watch`
 functions, as well as the convenience macro `with-etcd` to make it
 easy to start-up and shut-down your "embedded" etcd node.  You can
-upply optional `:on-leader` and `on-follower` lambdas that will get
+supply optional `:on-leader` and `on-follower` lambdas that will get
 called when the node becomes the leader or follower respectively.
 
 Etcd is configured for auto-TLS communication between peers, meaning
