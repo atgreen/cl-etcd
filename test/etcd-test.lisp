@@ -32,7 +32,7 @@
       ;; Future versions shouldn't need this sleep.  with-etcd should
       ;; wait until etcd is ready to accept client traffic.
       (sleep 15)
-      (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:get etcd "hello"))
+      (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:get-etcd "hello" etcd))
       (if *leader?*
           (progn
             (sleep 15)
