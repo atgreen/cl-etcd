@@ -18,7 +18,7 @@
 
 (asdf:defsystem #:etcd-test
   :description "Test etcd"
-  :author "Anthony Green <green@moxielogic.com"
+  :author "Anthony Green <green@moxielogic.com>"
   :version "0"
   :serial t
   :components ((:file "etcd-test"))
