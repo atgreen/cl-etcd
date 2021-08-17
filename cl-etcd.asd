@@ -19,6 +19,7 @@
 (asdf:defsystem #:cl-etcd
   :description "Run etcd as an asynchronous inferior process."
   :author "Anthony Green <green@moxielogic.com>"
+  :license "AGPL3"
   :version "0"
   :serial t
   :components ((:file "package")
