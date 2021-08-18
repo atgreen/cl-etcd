@@ -81,6 +81,7 @@
    (on-leader :reader on-leader :initarg :on-leader :initform nil)
    (on-follower :reader on-follower :initarg :on-follower :initform nil)
    (ready :reader ready :initform nil)
+   (version :reader version :initform nil)
    (start-semaphore :reader start-semaphore :initform (bt:make-semaphore))
    (role :reader role)))
 
@@ -107,22 +108,37 @@ nil and we are creating a non-clustered etcd instance."
   ;; subprocess.  Only one thread should ever be calling this
   ;; function, so we don't need to protect access to internal state
   ;; (eg. READY).
-  (with-slots (ready start-semaphore id role on-leader on-follower) etcd
-    (unless ready
-      (when (search "ready to serve client requests" s)
-        (setf ready t)
-        (bt:signal-semaphore start-semaphore)))
-    (unless id
-      (cl-ppcre:do-scans (match-start match-end reg-starts reg-ends +etcd-member-id-regex+ s)
-        (setf id (subseq s (aref reg-starts 0) (aref reg-ends 0)))))
-    (cl-ppcre:do-scans (match-start match-end reg-starts reg-ends +became-regex+ s)
-      (setf role (subseq s (aref reg-starts 1) (aref reg-ends 1)))
-      (if (string= role "leader")
-          (when on-leader (bt:make-thread (lambda () (funcall on-leader etcd))))
-          (if (string= role "follower")
-              (when on-follower (bt:make-thread (lambda () (funcall on-follower etcd)))))))))
+  (with-slots (ready version start-semaphore id role on-leader on-follower) etcd
+    (cond
+      ((not version)
+       (when (search "starting an etcd server" s)
+         (let* ((json (json:decode-json-from-string s))
+                (vstring (cdr (assoc :etcd-version json)))
+                (vnums (split-sequence:split-sequence #\. vstring))
+                (v (+ (parse-integer (car vnums)) (/ (parse-integer (cadr vnums)) 10))))
+           (when (< v 3.5)
+             (error "etcd version 3.5 or higher is required, but we found version ~A" vstring))
+           (setf version vstring))))
+      ((not ready)
+       (when (search "ready to serve client requests" s)
+         (setf ready t)
+         (bt:signal-semaphore start-semaphore)))
+      (otherwise
+       (unless id
+         (cl-ppcre:do-scans (match-start match-end reg-starts reg-ends +etcd-member-id-regex+ s)
+           (setf id (subseq s (aref reg-starts 0) (aref reg-ends 0)))))
+       (cl-ppcre:do-scans (match-start match-end reg-starts reg-ends +became-regex+ s)
+         (setf role (subseq s (aref reg-starts 1) (aref reg-ends 1)))
+         (if (string= role "leader")
+             (when on-leader (bt:make-thread (lambda () (funcall on-leader etcd))))
+             (if (string= role "follower")
+                 (when on-follower (bt:make-thread (lambda () (funcall on-follower etcd)))))))))))
 
 (defmethod initialize-instance :after ((etcd etcd) &key)
+  (multiple-value-bind (output error-output exit-code)
+      (uiop:run-program "which etcd" :ignore-error-status t)
+    (when (not (= 0 exit-code))
+      (error "etcd command is required but missing")))
   (with-slots (config start-semaphore process get-put-uri) etcd
     (flet ((get-config-value (key)
              (or (gethash key config)

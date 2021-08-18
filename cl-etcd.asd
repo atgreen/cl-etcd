@@ -31,4 +31,5 @@
                :cl-json
                :cl-ppcre
                :drakma
-               :flexi-streams))
+               :flexi-streams
+               :split-sequence))
