@@ -150,20 +150,16 @@ nil and we are creating a non-clustered etcd instance."
                                      (monitor-etcd-output etcd s))))
         (bt:wait-on-semaphore start-semaphore)))))
 
-(defun (setf get-etcd) (key value etcd)
+(defun (setf get-etcd) (value key etcd)
   "PUT the KEY/VALUE pair into ETCD."
   (with-slots (get-put-uri) etcd
-    (drakma:http-request (concatenate 'string get-put-uri key)
-                         :method :put
-                         :content (format nil "value=~S" value))))
-
-
-(defun put (etcd key value)
-  "PUT the KEY/VALUE pair into ETCD."
-  (with-slots (get-put-uri) etcd
-    (drakma:http-request (concatenate 'string get-put-uri key)
-                         :method :put
-                         :content (format nil "value=~S" value))))
+    (multiple-value-bind (answer error-code)
+        (drakma:http-request (concatenate 'string get-put-uri key)
+                             :method :put
+                             :content (format nil "value=~A" value))
+      (when (not (= error-code 200))
+        (error "can't store in etcd: ~A" (flexi-streams:octets-to-string answer)))
+      key)))
 
 (defun get-etcd (key etcd)
   "GET the value of KEY from ETCD.  Returns NIL if KEY not found.
@@ -182,8 +178,7 @@ Throws an error on unexpected errors."
                        answer))))))
       (when (not (= code 200))
         (error (cdr (assoc :message json))))
-      (let ((s (cdr (assoc :value (cdr (assoc :node json))))))
-        (subseq s 1 (- (length s) 1))))))
+      (cdr (assoc :value (cdr (assoc :node json)))))))
 
 (defun watch (etcd key)
   "Like GET, but waits until value changes."
