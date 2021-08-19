@@ -37,6 +37,6 @@
           (progn
             (sleep 15)
             (setf (cl-etcd:get-etcd "hello" etcd) "again"))
-          (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:watch etcd "hello")))
+          (format t "~A: hello: ~A~%" (cl-etcd:id etcd) (cl-etcd:watch-etcd etcd "hello")))
       (format t ">>> DONE - sleeping for 40 <<<")
       (sleep 40))))
