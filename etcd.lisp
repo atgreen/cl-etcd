@@ -123,7 +123,7 @@ nil and we are creating a non-clustered etcd instance."
        (when (search "ready to serve client requests" s)
          (setf ready t)
          (bt:signal-semaphore start-semaphore)))
-      (:otherwise
+      (t
        (unless id
          (cl-ppcre:do-scans (match-start match-end reg-starts reg-ends +etcd-member-id-regex+ s)
            (setf id (subseq s (aref reg-starts 0) (aref reg-ends 0)))))
