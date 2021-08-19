@@ -175,32 +175,28 @@ nil and we are creating a non-clustered etcd instance."
         (error "can't store in etcd[~A]: ~A" error-code (flexi-streams:octets-to-string answer)))
       key)))
 
+(defun %get-etcd (key etcd wait)
+  "GET the value of KEY from ETCD, but wait for a change first if WAIT.
+Returns NIL if KEY not found.  Throws an error on unexpected errors."
+  (with-slots (get-put-uri) etcd
+    (multiple-value-bind (answer code)
+        (drakma:http-request (format nil "~A~A~A"
+                                     get-put-uri key
+                                     (if wait "?wait=true" ""))
+                             :method :get)
+      (if (= code 404)
+          nil
+          (let ((json (json:decode-json-from-string
+                       (flexi-streams:octets-to-string answer))))
+            (if (= code 200)
+                (cdr (assoc :value (cdr (assoc :node json))))
+                (error (cdr assoc :message json))))))))
+
 (defun get-etcd (key etcd)
   "GET the value of KEY from ETCD.  Returns NIL if KEY not found.
 Throws an error on unexpected errors."
-  (block get
-    (let* ((code 0)
-           (json (json:decode-json-from-string
-                  (flexi-streams:octets-to-string
-                   (with-slots (get-put-uri) etcd
-                     (multiple-value-bind (answer error-code)
-                         (drakma:http-request (concatenate 'string get-put-uri key)
-                                              :method :get)
-                       (when (= error-code 404)
-                         (return-from get nil))
-                       (setf code error-code)
-                       answer))))))
-      (when (not (= code 200))
-        (error (cdr (assoc :message json))))
-      (cdr (assoc :value (cdr (assoc :node json)))))))
+  (%get-etcd key etcd nil))
 
 (defun watch (etcd key)
   "Like GET, but waits until value changes."
-  (let ((json (json:decode-json-from-string
-               (flexi-streams:octets-to-string
-                (with-slots (get-put-uri) etcd
-                  (drakma:http-request (concatenate 'string get-put-uri key "?wait=true")
-                                       :method :get))))))
-    (when (assoc :error-code json)
-      (error (cdr (assoc :message json))))
-    (cdr (assoc :value (cdr (assoc :node json))))))
+  (%get-etcd key etcd t))
