@@ -123,7 +123,7 @@ nil and we are creating a non-clustered etcd instance."
        (when (search "ready to serve client requests" s)
          (setf ready t)
          (bt:signal-semaphore start-semaphore)))
-      (otherwise
+      (:otherwise
        (unless id
          (cl-ppcre:do-scans (match-start match-end reg-starts reg-ends +etcd-member-id-regex+ s)
            (setf id (subseq s (aref reg-starts 0) (aref reg-ends 0)))))
@@ -173,8 +173,8 @@ nil and we are creating a non-clustered etcd instance."
         (drakma:http-request (concatenate 'string get-put-uri key)
                              :method :put
                              :content (format nil "value=~A" value))
-      (when (not (= error-code 200))
-        (error "can't store in etcd: ~A" (flexi-streams:octets-to-string answer)))
+      (when (and (not (= error-code 200)) (not (= error-code 201)))
+        (error "can't store in etcd[~A]: ~A" error-code (flexi-streams:octets-to-string answer)))
       key)))
 
 (defun get-etcd (key etcd)
