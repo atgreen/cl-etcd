@@ -141,10 +141,10 @@ nil and we are creating a non-clustered etcd instance."
     (flet ((get-config-value (key)
              (or (gethash key config)
                  (error "etcd config missing value for '~A'" key))))
-      (setf get-put-uri (format nil "~A/v2/keys/"
-                                (if config
-                                    (get-config-value "listen-client-urls")
-                                    "http://127.0.0.1:2379")))
+      (setf get-put-uri (str:concat (if config
+                                        (get-config-value "listen-client-urls")
+                                        "http://127.0.0.1:2379")
+                                    "/v2/keys/"))
       (let ((cmd (if config
                      `("etcd"
                        "--name" ,(get-config-value "name")
@@ -170,19 +170,31 @@ nil and we are creating a non-clustered etcd instance."
     (multiple-value-bind (answer error-code)
         (drakma:http-request (concatenate 'string get-put-uri key)
                              :method :put
-                             :content (format nil "value=~A" value))
+                             :content (str:concat "value=" value))
       (when (and (not (= error-code 200)) (not (= error-code 201)))
         (error "can't store in etcd[~A]: ~A" error-code (flexi-streams:octets-to-string answer)))
       key)))
 
-(defun delete-etcd (key etcd &key (error-on-missing-key nil))
+(defun delete-etcd (key etcd &key (error-on-missing nil))
   "Delete the KEY from ETCD."
   (with-slots (get-put-uri) etcd
     (multiple-value-bind (answer error-code)
         (drakma:http-request (concatenate 'string get-put-uri key)
                              :method :delete)
       (if (or (= error-code 200)
-              (and (= error-code 404) (not error-on-missing-key)))
+              (and (= error-code 404) (not error-on-missing)))
+         key
+         (error "can't delete from etcd[~A]: ~A" error-code (flexi-streams:octets-to-string answer)))
+      key)))
+
+(defun delete-dir-etcd (dir etcd &key (error-on-missing nil))
+  "Delete the directory DIR recursively from ETCD."
+  (with-slots (get-put-uri) etcd
+    (multiple-value-bind (answer error-code)
+        (drakma:http-request (str:concat get-put-uri key "?recursive=true")
+                             :method :delete)
+      (if (or (= error-code 200)
+              (and (= error-code 404) (not error-on-missing)))
          key
          (error "can't delete from etcd[~A]: ~A" error-code (flexi-streams:octets-to-string answer)))
       key)))
@@ -192,9 +204,7 @@ nil and we are creating a non-clustered etcd instance."
 Returns NIL if KEY not found.  Throws an error on unexpected errors."
   (with-slots (get-put-uri) etcd
     (multiple-value-bind (answer code)
-        (drakma:http-request (format nil "~A~A~A"
-                                     get-put-uri key
-                                     (if wait "?wait=true" ""))
+        (drakma:http-request (str:concat get-put-uri key (if wait "?wait=true" ""))
                              :method :get)
       (if (= code 404)
           nil

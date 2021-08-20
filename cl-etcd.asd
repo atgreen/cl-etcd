@@ -30,6 +30,7 @@
                :cl-base64
                :cl-json
                :cl-ppcre
+               :cl-str
                :drakma
                :flexi-streams
                :split-sequence))
