@@ -188,7 +188,7 @@ nil and we are creating a non-clustered etcd instance."
       key)))
 
 (defun %get-etcd (key etcd wait)
-  "GET the value of KEY from ETCD, but wait for a change first if WAIT.
+  "Get the value of KEY from ETCD, but wait for a change first if WAIT.
 Returns NIL if KEY not found.  Throws an error on unexpected errors."
   (with-slots (get-put-uri) etcd
     (multiple-value-bind (answer code)
@@ -205,10 +205,10 @@ Returns NIL if KEY not found.  Throws an error on unexpected errors."
                 (error (cdr assoc :message json))))))))
 
 (defun get-etcd (key etcd)
-  "GET the value of KEY from ETCD.  Returns NIL if KEY not found.
+  "Get the value of KEY from ETCD.  Returns NIL if KEY not found.
 Throws an error on unexpected errors."
   (%get-etcd key etcd nil))
 
 (defun watch-etcd (etcd key)
-  "Like GET, but waits until value changes."
+  "Like GET-ETCD, but waits until value changes."
   (%get-etcd key etcd t))
