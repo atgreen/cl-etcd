@@ -212,7 +212,7 @@ Returns NIL if KEY not found.  Throws an error on unexpected errors."
                        (flexi-streams:octets-to-string answer))))
             (if (= code 200)
                 (cdr (assoc :value (cdr (assoc :node json))))
-                (error (cdr assoc :message json))))))))
+                (error (cdr (assoc :message json)))))))))
 
 (defun get-etcd (key etcd)
   "Get the value of KEY from ETCD.  Returns NIL if KEY not found.
