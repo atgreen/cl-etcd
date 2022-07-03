@@ -59,6 +59,7 @@ make three config files like so...
     listen-client-urls = "http://127.0.0.1:2379"
     advertise-client-urls = "http://127.0.0.1:2379"
     initial-cluster = "infra0=http://127.0.0.1:2380,infra1=http://127.0.0.1:2480,infra2=http://127.0.0.1:2580"
+    host-whitelist = "127.0.0.1"
 
 `config2.ini`:
 
@@ -69,6 +70,7 @@ make three config files like so...
     listen-client-urls = "http://127.0.0.1:2479"
     advertise-client-urls = "http://127.0.0.1:2479"
     initial-cluster = "infra0=http://127.0.0.1:2380,infra1=http://127.0.0.1:2480,infra2=http://127.0.0.1:2580"
+    host-whitelist = "127.0.0.1"
 
 `config2.ini`:
 
@@ -79,6 +81,7 @@ make three config files like so...
     listen-client-urls = "http://127.0.0.1:2579"
     advertise-client-urls = "http://127.0.0.1:2579"
     initial-cluster = "infra0=http://127.0.0.1:2380,infra1=http://127.0.0.1:2480,infra2=http://127.0.0.1:2580"
+    host-whitelist = "127.0.0.1"
 
 Now, in each process, load the appropriate config file:
 
