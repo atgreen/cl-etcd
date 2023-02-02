@@ -1,4 +1,4 @@
 FROM quay.io/containerlisp/lisp-10-ubi8
 
-RUN curl -L https://github.com/etcd-io/etcd/releases/download/v3.5.5/etcd-v3.5.5-linux-amd64.tar.gz | tar xvfz - && mkdir /opt/app-root/src/bin && mv etcd-v3.5.5-linux-amd64/* /opt/app-root/src/bin
+RUN curl -L https://github.com/etcd-io/etcd/releases/download/v3.5.8/etcd-v3.5.8-linux-amd64.tar.gz | tar xvfz - && mkdir /opt/app-root/src/bin && mv etcd-v3.5.8-linux-amd64/* /opt/app-root/src/bin
 RUN sbcl --eval '(dolist (p (list :alexandria :async-process :bordeaux-threads :cl-base64 :cl-json :cl-ppcre :cl-toml :drakma :flexi-streams)) (ql:quickload p))'
