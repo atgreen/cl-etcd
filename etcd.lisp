@@ -1,6 +1,6 @@
 ;;; -*- Mode: LISP; Syntax: COMMON-LISP; Package: CL-ETCD; Base: 10 -*-
 ;;;
-;;; Copyright (C) 2021, 2022  Anthony Green <green@moxielogic.com>
+;;; Copyright (C) 2021, 2022, 2023  Anthony Green <green@moxielogic.com>
 ;;;
 ;;; This program is free software: you can redistribute it and/or
 ;;; modify it under the terms of the GNU Affero General Public License
@@ -157,6 +157,7 @@ nil and we are creating a non-clustered etcd instance."
                        "--initial-cluster" ,(get-config-value "initial-cluster")
                        "--initial-cluster-state" "new"
                        "--initial-cluster-token" "cl-etcd-cluster"
+                       "--log-outputs 'stdout'"
                        "--peer-auto-tls")
                      `("etcd" "--host-whitelist" "127.0.0.1"))))
         (let ((host-whitelist (gethash "host-whitelist" config)))
